@@ -14,7 +14,7 @@ import uuid
 import logging
 
 logging.basicConfig(
-    level = logging.DEBUG,
+    level = logging.WARN,
     format = '[%(levelname)s][%(asctime)s]{ %(message)s }',
     filename = 'logs/' + str(int(time.time())) + '.txt'
 )
@@ -35,26 +35,18 @@ logging.debug(f'the outline server info:vOutlineServerInfo')
 
 import json
 
-vDbObject = json.load(open('data/DataBase.json', 'r'))
-
-vDbPkeyToDataTable: dict[str, dict] = vDbObject.get('DbPkeyToDataTable', {}) # { TimeSince, DaysLimit, TimeStart }
-vDbPkeyToOkeyTable: dict[str, str] = vDbObject.get('DbPkeyToOkeyTable', {})
-vDbPkeyToUserTable: dict[str, str] = vDbObject.get('DbPkeyToUserTable', {})
-vDbUserToListTable: dict[str, list] = vDbObject.get('DbUserToListTable', {}) # list[PkeyIndex]
+vDbTable = json.load(open('data/DataBase.json', 'r', encoding = 'utf-8'))
+vDbPkeyToDataTable: dict[str, dict] = vDbTable.get('DbPkeyToDataTable', {}) # { TimeSince, DaysLimit, TimeStart }
+vDbPkeyToOkeyTable: dict[str, str] = vDbTable.get('DbPkeyToOkeyTable', {})
+vDbPkeyToUserTable: dict[str, str] = vDbTable.get('DbPkeyToUserTable', {})
+vDbUserToListTable: dict[str, list] = vDbTable.get('DbUserToListTable', {}) # list[PkeyIndex]
 def fDbSave():
-    vDbObject['DbPkeyToDataTable'] = vDbPkeyToDataTable
-    vDbObject['DbPkeyToOkeyTable'] = vDbPkeyToOkeyTable
-    vDbObject['DbPkeyToUserTable'] = vDbPkeyToUserTable
-    vDbObject['DbUserToListTable'] = vDbUserToListTable
-    vDbObject.close()
-    vJson = {
-        'DbPkeyToDataTable': vDbPkeyToDataTable,
-        'DbPkeyToOkeyTable': vDbPkeyToOkeyTable,
-        'DbPkeyToUserTable': vDbPkeyToUserTable,
-        'DbUserToListTable': vDbUserToListTable,
-    }
-    json.dump(vJson, open('data/DataBase.json', 'w'))
-    print('the database have been saved')
+    vDbTable['DbPkeyToDataTable'] = vDbPkeyToDataTable
+    vDbTable['DbPkeyToOkeyTable'] = vDbPkeyToOkeyTable
+    vDbTable['DbPkeyToUserTable'] = vDbPkeyToUserTable
+    vDbTable['DbUserToListTable'] = vDbUserToListTable
+    json.dump(vDbTable, open('data/DataBase.json', 'w'), separators = (',', ':'))
+    logging.info('the database have been saved')
 atexit.register(fDbSave)
 
 def fCreatePkey(vDaysLimit: int) -> str:
@@ -119,7 +111,7 @@ def fReviewPkeyTable():
         except Exception as vError:
             logging.error(f'failed to delete the pkey "{vPkey}": ' + str(vError))
 ### fReviewPkeyTable
-fReviewPkeyTable()
+#fReviewPkeyTable()
 
 import telebot
 import telebot.types
