@@ -1,0 +1,5 @@
+.env
+conf/
+logs/
+data/
+venv/
