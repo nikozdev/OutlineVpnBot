@@ -35,19 +35,31 @@ logging.debug(f'the outline server info:vOutlineServerInfo')
 
 import json
 
-vDbTable = json.load(open('data/DataBase.json', 'r', encoding = 'utf-8'))
-vDbPkeyToDataTable: dict[str, dict] = vDbTable.get('DbPkeyToDataTable', {}) # { TimeSince, DaysLimit, TimeStart }
-vDbPkeyToOkeyTable: dict[str, str] = vDbTable.get('DbPkeyToOkeyTable', {})
-vDbPkeyToUserTable: dict[str, str] = vDbTable.get('DbPkeyToUserTable', {})
-vDbUserToListTable: dict[str, list] = vDbTable.get('DbUserToListTable', {}) # list[PkeyIndex]
-def fDbSave():
-    vDbTable['DbPkeyToDataTable'] = vDbPkeyToDataTable
-    vDbTable['DbPkeyToOkeyTable'] = vDbPkeyToOkeyTable
-    vDbTable['DbPkeyToUserTable'] = vDbPkeyToUserTable
-    vDbTable['DbUserToListTable'] = vDbUserToListTable
-    json.dump(vDbTable, open('data/DataBase.json', 'w'), separators = (',', ':'))
-    logging.info('the database have been saved')
-atexit.register(fDbSave)
+vDbPkeyToDataTable: dict[str, dict]
+vDbPkeyToOkeyTable: dict[str, str] 
+vDbPkeyToUserTable: dict[str, str] 
+vDbUserToListTable: dict[str, list]
+def fDbLoadOne(vDbName: str):
+    logging.info('the database load: ' + vDbName)
+    return json.load(open(f'data/{vDbName}.json', 'r', encoding = 'utf-8'))
+### fDbLoadOne
+def fDbLoadAll():
+    vDbPkeyToDataTable = fDbLoadOne('PkeyToDataTable')
+    vDbPkeyToOkeyTable = fDbLoadOne('PkeyToOkeyTable')
+    vDbPkeyToUserTable = fDbLoadOne('PkeyToUserTable')
+    vDbUserToListTable = fDbLoadOne('UserToListTable')
+### fDbLoadAll
+def fDbSaveOne(vDbName: str, vDbTable: dict):
+    json.dump(vDbTable, open(f'data/{vDbName}.json', 'w', encoding = 'utf-8'), separators = (',', ':'))
+    logging.info('the database save: ' + vDbName)
+### fDbSaveOne
+def fDbSaveAll():
+    fDbSaveOne('PkeyToDataTable', vDbPkeyToDataTable)
+    fDbSaveOne('PkeyToOkeyTable', vDbPkeyToOkeyTable)
+    fDbSaveOne('PkeyToUserTable', vDbPkeyToUserTable)
+    fDbSaveOne('UserToListTable', vDbUserToListTable)
+### fDbSaveAll
+atexit.register(fDbSaveAll)
 
 def fCreatePkey(vDaysLimit: int) -> str:
     vPkeyIndex = str(uuid.uuid4())
