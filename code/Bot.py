@@ -100,7 +100,9 @@ def fLaunchPkey(vPkeyIndex: str, vUserIndex: str) -> str:
     vOkeyIndex = str(uuid.uuid4())
     vOkeyEntry: Api.tOutlineKey = vOutlineConnection.fCreateKey(vIndex = vOkeyIndex, vTitle = vPkeyIndex)
     vDbPkeyToOkeyTable[vPkeyIndex] = vOkeyIndex
-    vDbUserToListTable[vUserIndex].append(vPkeyIndex)
+    vList = vDbUserToListTable.get(vUserIndex, [])
+    vList.append(vPkeyIndex)
+    vDbUserToListTable[vUserIndex] = vList
     return vOkeyIndex
 ### fLaunchPkey
 
@@ -251,7 +253,7 @@ def fVetAdmin(vUser: telebot.types.User) -> bool:
 
 def fMakeProfileResponse(vUserObject: telebot.types.User):
     vUserIdStr: str = str(vUserObject.id)
-    vList: list = vDbUserToListTable[vUserIdStr]
+    vList: list = vDbUserToListTable.get(vUserIdStr, [])
     vResponse = vBotTextTable['Profile_Title']
     vResponse += vBotTextTable['Profile_Keys']
     for vPkeyOrder, vPkeyIndex in enumerate(vList):
@@ -283,10 +285,6 @@ def fHandle_Msg_Start_Main(vMessage: telebot.types.Message, vUserObject: telebot
 ### fHandle_Msg_Start_Main
 @vBot.message_handler(commands = ['start'])
 def fHandle_Msg_Start_Proxy(vMessage: telebot.types.Message):
-    vUserIdInt: int = vMessage.from_user.id
-    vUserIdStr: str = str(vUserIdInt)
-    if not vDbUserToListTable.get(vUserIdStr):
-        vDbUserToListTable[vUserIdStr] = []
     fHandle_Msg_Start_Main(vMessage, vMessage.from_user)
 ### fHandle_Msg_Start_Proxy
 
