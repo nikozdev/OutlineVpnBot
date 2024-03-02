@@ -377,12 +377,12 @@ def fHandle_Msg_Admin_Create_Input(vMessage: telebot.types.Message):
         vPkeyCount: int
         vPkeyCount = int(vArgArray[0])
 
-        vTimeLimit: int = datetime.timedelta(
+        vTimeLimit: int = int(datetime.timedelta(
             days = (int(vArgArray[1]) if (vArgCount > 1) else 0),
             hours = (int(vArgArray[2]) if (vArgCount > 2) else 0),
             minutes = (int(vArgArray[3]) if (vArgCount > 3) else 0),
             seconds = (int(vArgArray[4]) if (vArgCount > 4) else 0),
-        ).seconds
+        ).total_seconds())
 
         vResponse: str = vBotTextTable['Admin_Create_Success'].replace('{Count}', str(vPkeyCount))
         for vIter in range(vPkeyCount):
