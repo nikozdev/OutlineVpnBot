@@ -5,7 +5,7 @@ import logging
 
 import json
 
-import OutlineApi
+import Api
 
 logging.basicConfig(level = logging.DEBUG, format = '[%(levelname)s][%(asctime)s]{%(message)s}')
 logging.info('init')
@@ -17,7 +17,7 @@ if not vApiUrl:
 vCertSha256: str = os.environ.get('vOutlineCertSha256', '')
 if not vApiUrl:
     raise Exception('could not find environment variable vOutlineCertSha256!!!')
-vConnection = OutlineApi.tConnection(vApiUrl, vCertSha256)
+vConnection = Api.tConnection(vApiUrl, vCertSha256)
 
 logging.info('work')
 
