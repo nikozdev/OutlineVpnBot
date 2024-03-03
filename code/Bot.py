@@ -22,12 +22,8 @@ logging.info('logging started!')
 
 import Api
 
-vOutlineApiUrl: str = os.environ.get('vOutlineApiUrl', '')
-if not vOutlineApiUrl:
-    raise Exception('could not find environment variable vOutlineApiUrl!!!')
-vOutlineCertSha256: str = os.environ.get('vOutlineCertSha256', '')
-if not vOutlineCertSha256:
-    raise Exception('could not find environment variable vOutlineCertSha256!!!')
+vOutlineApiUrl: str = os.environ['vOutlineApiUrl']
+vOutlineCertSha256: str = os.environ['vOutlineCertSha256']
 vOutlineConnection = Api.tConnection(vApiUrl = vOutlineApiUrl, vCertSha256 = vOutlineCertSha256)
 vOutlineServerInfo: dict = vOutlineConnection.fGetServerInfo()
 logging.debug(f'the outline server info:vOutlineServerInfo')
@@ -153,13 +149,20 @@ fReviewPkeyTable()
 import telebot
 import telebot.types
 
-vBotKey: str = os.environ.get('vTelegramBotKey', '')
-if not vBotKey:
-    raise Exception('could not find environment variable vTelegramBotKey!!!')
-
 vBotTextTable: dict[str, str] = json.load(open('conf/Text.json', 'r', encoding = 'utf-8'))
 
+vBotKey: str = os.environ['vTelegramBotKey']
 vBot: telebot.TeleBot = telebot.TeleBot(vBotKey, parse_mode = None)
+vBot.set_my_commands(commands = [
+    telebot.types.BotCommand('start', 'Главная'),
+    telebot.types.BotCommand('activate', 'Активировать ключ'),
+    telebot.types.BotCommand('profile', 'Профиль'),
+    telebot.types.BotCommand('mykeys', 'Мои Ключи'),
+    telebot.types.BotCommand('trouble', 'Обновить не работающий ключ'),
+    telebot.types.BotCommand('help', 'Помощь'),
+    telebot.types.BotCommand('info', 'Информация'),
+    telebot.types.BotCommand('support', 'Поддержка'),
+], scope = telebot.types.BotCommandScopeDefault())
 
 vMarkupMain: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
 vMarkupMain.add(telebot.types.InlineKeyboardButton(
@@ -186,18 +189,14 @@ vMarkupAdmin: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardM
 vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Admin_Markup_Create'],
     callback_data = 'admin_create',
-))
-vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
+), telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Admin_Markup_Delete'],
     callback_data = 'admin_delete',
-))
+), row_width = 2)
+vMarkupAdmin.add()
 vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Admin_Markup_Payoff'],
     callback_data = 'admin_payoff',
-))
-vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
-    text = vBotTextTable['Admin_Markup_KeyTab'],
-    callback_data = 'admin_keytab',
 ))
 vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Return_Markup'],
@@ -227,6 +226,7 @@ vMarkupCancel.add(telebot.types.InlineKeyboardButton(
 vSpamDelay: int = 10
 vSpamTableForStart: dict[int, int] = { }
 vSpamTableForProfile: dict[int, int] = { }
+vSpamTableForMyKeys: dict[int, int] = { }
 vSpamTableForActivate: dict[int, int] = { }
 vSpamTableForTrouble: dict[int, int] = { }
 vSpamTableForHelp: dict[int, int] = { }
@@ -276,7 +276,7 @@ def fHandle_Msg_Start_Main(vMessage: telebot.types.Message, vUserObject: telebot
     if fVetSpam(vSpamTableForStart, vUserObject.id):
         vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
         return
-    #vBot.set_chat_menu_button(vMessage.chat.id, telebot.types.MenuButtonCommands('commands'))
+    vBot.set_chat_menu_button(vMessage.chat.id, telebot.types.MenuButtonCommands('commands'))
     vBot.send_message(vMessage.chat.id, vBotTextTable['Start_Title'], reply_markup = vMarkupMain)
 ### fHandle_Msg_Start_Main
 @vBot.message_handler(commands = ['start'])
@@ -447,44 +447,6 @@ def fHandle_Msg_Admin_Payoff_Proxy(vMessage: telebot.types.Message):
     fHandle_Msg_Admin_Payoff_Main(vMessage, vMessage.from_user)
 ### fHandle_Msg_Admin_Payoff_Proxy
 
-def fHandle_Msg_Admin_KeyTab_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
-    if not fVetAdmin(vUserObject):
-        vBot.reply_to(vMessage, vBotTextTable['Admin_Failure'])
-        vBot.send_message(vMessage.chat.id, vBotTextTable['Start_Title'], reply_markup = vMarkupMain)
-        return
-    vOkeyArray: list[Api.tOutlineKey] = vOutlineConnection.fGetKeyArray()
-    vResponse: str = 'key tables'
-    vResponse += '\nPkeyToDataTable:'
-    for vPkey, vData in vDbPkeyToDataTable.items():
-        vResponse += '\nPkey = ' + vPkey
-        vResponse += '; TimeSince = ' + str(vData.get('TimeSince'))
-        vResponse += '; TimeLimit = ' + str(vData.get('TimeLimit'))
-        vResponse += '; TimeStart = ' + str(vData.get('TimeStart'))
-    vResponse += '\nPkeyToOkeyTable:'
-    for vPkeyIndex, vOkeyIndex in vDbPkeyToOkeyTable.items():
-        vResponse += '\nPkey = ' + vPkeyIndex
-        vResponse += '; Okey = ' + vOkeyIndex
-    vResponse += '\nPkeyToUserTable:'
-    for vPkeyIndex, vUserIndex in vDbPkeyToUserTable.items():
-        vResponse += '\nPkey = ' + vPkeyIndex
-        vResponse += '; User = ' + vUserIndex
-    vResponse += '\nOkeyArray:'
-    for vOkeyEntry in vOkeyArray:
-        vResponse += '\nIndex = ' + str(vOkeyEntry.vIndex)
-        vResponse += '; Title = ' + vOkeyEntry.vTitle
-        vResponse += '; Passw = ' + vOkeyEntry.vPassw
-        vResponse += '; AUrl = ' + vOkeyEntry.vAUrl
-        vResponse += '; Port = ' + str(vOkeyEntry.vPort)
-        vResponse += '; Meth = ' + vOkeyEntry.vMeth
-        vResponse += '; DataSpent = ' + str(vOkeyEntry.vDataSpent)
-        vResponse += '; DataLimit = ' + str(vOkeyEntry.vDataLimit)
-    vBot.reply_to(vMessage, vResponse, reply_markup = vMarkupAdmin)
-### fHandle_Msg_Admin_KeyTab_Main
-@vBot.message_handler(commands=['admin_keytab'])
-def fHandle_Msg_Admin_KeyTab_Proxy(vMessage: telebot.types.Message):
-    fHandle_Msg_Admin_KeyTab_Main(vMessage, vMessage.from_user)
-### fHandle_Msg_Admin_KeyTab_Proxy
-
 def fHandle_Msg_Admin_Help_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if not fVetAdmin(vUserObject):
         vBot.reply_to(vMessage, vBotTextTable['Admin_Failure'])
@@ -521,8 +483,6 @@ def fHandle_Query(vQuery: telebot.types.CallbackQuery):
             fHandle_Msg_Admin_Delete_Main(vQuery.message, vQuery.from_user)
         case 'admin_payoff':
             fHandle_Msg_Admin_Payoff_Main(vQuery.message, vQuery.from_user)
-        case 'admin_keytab':
-            fHandle_Msg_Admin_KeyTab_Main(vQuery.message, vQuery.from_user)
         case 'admin_help':
             fHandle_Msg_Admin_Help_Main(vQuery.message, vQuery.from_user)
         case 'cancel':
