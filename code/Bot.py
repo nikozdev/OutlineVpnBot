@@ -4,16 +4,12 @@ import time
 import datetime
 vTimeFormat: str = '%Y-%m-%d %H:%M:%S'
 
-import regex
-
 import os
 import threading
 
 import uuid
 
 import logging
-
-import typing
 
 logging.basicConfig(
     level = logging.INFO,
@@ -167,17 +163,16 @@ vBot: telebot.TeleBot = telebot.TeleBot(vBotKey, parse_mode = None)
 
 vMarkupMain: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
 vMarkupMain.add(telebot.types.InlineKeyboardButton(
-    text = vBotTextTable['Profile_Markup'],
-    callback_data = 'profile',
-))
-vMarkupMain.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Activate_Markup'],
     callback_data = 'activate',
-))
+), row_width = 1)
 vMarkupMain.add(telebot.types.InlineKeyboardButton(
+    text = vBotTextTable['Profile_Markup'],
+    callback_data = 'profile',
+), telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Help_Markup'],
     callback_data = 'help',
-))
+), row_width = 2)
 
 vMarkupAdmin: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
 #vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
@@ -281,6 +276,7 @@ def fHandle_Msg_Start_Main(vMessage: telebot.types.Message, vUserObject: telebot
     if fVetSpam(vSpamTableForStart, vUserObject.id):
         vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
         return
+    #vBot.set_chat_menu_button(vMessage.chat.id, telebot.types.MenuButtonCommands('commands'))
     vBot.send_message(vMessage.chat.id, vBotTextTable['Start_Title'], reply_markup = vMarkupMain)
 ### fHandle_Msg_Start_Main
 @vBot.message_handler(commands = ['start'])
