@@ -1,8 +1,9 @@
 #! /bin/bash
 
 if [ ! -d '/home/main' ]; then
-  useradd -m main
-  #usermod -aG sudo main
+  #useradd -m main
+  adduser -m main # makes the difference for debian
+  # usermod main -aG sudo
 fi
 
 if [ "$#" -eq 1 ]; then
