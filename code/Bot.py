@@ -149,7 +149,17 @@ fReviewPkeyTable()
 import telebot
 import telebot.types
 
-vBotTextTable: dict[str, str] = json.load(open('conf/Text.json', 'r', encoding = 'utf-8'))
+vBotTextTable: dict[str, str] = {}
+#import csv
+import openpyxl
+vBotTextWb = openpyxl.load_workbook( 'conf/Text.csv.xlsx')
+vBotTextWs = vBotTextWb.active
+if not vBotTextWs:
+    raise Exception('could not find the bot text sheet')
+for vRow in vBotTextWs.iter_rows(min_row = 1, min_col=1):
+    if vRow[0].value:
+        vBotTextTable[vRow[0].value] = vRow[1].value
+#vBotTextTable: dict[str, str] = json.load(open('conf/Text.json', 'r', encoding = 'utf-8'))
 
 vBotKey: str = os.environ['vTelegramBotKey']
 vBot: telebot.TeleBot = telebot.TeleBot(vBotKey, parse_mode = None)
