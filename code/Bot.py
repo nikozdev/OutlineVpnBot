@@ -265,7 +265,7 @@ def fMakeMyKeysResponse(vUserObject: telebot.types.User):
     vList: list = vDbUserToListTable.get(vUserIdStr, [])
     vResponse = vBotTextTable['MyKeys']
     for vPkeyOrder, vPkeyIndex in enumerate(vList):
-        vKeyDesc: str = vBotTextTable['Profile_Keys_Iter']
+        vKeyDesc: str = vBotTextTable['MyKeys_Iter']
         vKeyDesc = vKeyDesc.replace('{Order}', str(vPkeyOrder + 1))
         vKeyDesc = vKeyDesc.replace('{PKey}', vPkeyIndex)
         vOkeyIndex = vDbPkeyToOkeyTable[vPkeyIndex]
@@ -314,7 +314,7 @@ def fHandle_Msg_MyKeys_Main(vMessage: telebot.types.Message, vUserObject: telebo
         return
     vBot.reply_to(vMessage, fMakeMyKeysResponse(vUserObject), reply_markup = vMarkupProfile)
 ### fHandle_Msg_MyKeys_Main
-@vBot.message_handler(commands = ['profile'])
+@vBot.message_handler(commands = ['mykeys'])
 def fHandle_Msg_MyKeys_Proxy(vMessage: telebot.types.Message):
     fHandle_Msg_MyKeys_Main(vMessage, vMessage.from_user)
 ### fHandle_Msg_MyKeys_Proxy
