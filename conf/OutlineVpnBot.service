@@ -1,0 +1,20 @@
+[Unit]
+Description=the service to run OutlineVpn telegram bot script
+After=network.target
+ 
+[Service]
+Type=simple
+User=main
+Group=main
+
+WorkingDirectory=/srv/OutlineVpnBot
+ExecStart=/srv/OutlineVpnBot/venv/bin/python code/Bot.py
+
+StartLimitInterval=15
+StartLimitBurst=10
+Restart=on-failure
+
+TimeoutSec=60
+ 
+[Install]
+WantedBy=multi-user.target
