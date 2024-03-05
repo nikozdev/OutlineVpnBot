@@ -6,6 +6,18 @@ if [ ! -d '/home/main' ]; then
   # usermod main -aG sudo
 fi
 
+if [ ! -d '/home/main/.ssh' ]; then
+  mkdir /home/main/.ssh
+fi
+
+if [ ! -e '/home/main/.ssh/id_rsa.pub' ]; then
+  ssh-keygen -f /home/main/.ssh/id_rsa -t rsa -b 4092 -P ''
+  cat /home/main/.ssh/id_rsa.pub >> /home/main/.ssh/authorized_keys
+fi
+echo 'the main ssh pubkey:'
+cat /home/main/.ssh/id_rsa.pub
+chown -R main:main /home/main/.ssh
+
 if [ "$#" -eq 1 ]; then
   vTelegramBotKey=$1
   exit
@@ -46,5 +58,7 @@ if [ ! -e "/lib/systemd/system/OutlineVpnBot.service" ]; then
   wget -O - https://raw.githubusercontent.com/nikozdev/OutlineVpnBot/main/conf/OutlineVpnBot.service > /lib/systemd/system/OutlineVpnBot.service
 fi
 systemctl daemon-reload
+systemctl enable OutlineVpnBot
+systemctl restart OutlineVpnBot
 
 echo 'success'
