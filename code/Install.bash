@@ -11,11 +11,13 @@ if [ ! -d '/home/main/.ssh' ]; then
 fi
 
 if [ ! -e '/home/main/.ssh/id_rsa.pub' ]; then
-  ssh-keygen -f /home/main/.ssh/id_rsa -t rsa -b 4092 -P ''
+  ssh-keygen -f /home/main/.ssh/id_rsa -t rsa -b 2048 -P ''
   cat /home/main/.ssh/id_rsa.pub >> /home/main/.ssh/authorized_keys
 fi
-echo 'the main ssh pubkey:'
+echo 'the main ssh public key (copy to server):'
 cat /home/main/.ssh/id_rsa.pub
+echo 'the main ssh private key (copy to client):'
+cat /home/main/.ssh/id_rsa
 chown -R main:main /home/main/.ssh
 
 if [ "$#" -eq 1 ]; then
