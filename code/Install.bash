@@ -2,7 +2,7 @@
 
 if [ ! -d '/home/main' ]; then
   #useradd -m main
-  adduser -m main # makes the difference for debian
+  adduser --disabled-password --gecos "" main # makes the difference for debian
   # usermod main -aG sudo
 fi
 
@@ -45,13 +45,14 @@ echo 'outline certSha256: '\"$vOutlineCertSha256\"
 if [ ! -d "/srv/OutlineVpnBot" ]; then
   echo 'installing the outline vpn bot repo'
   git clone https://github.com/nikozdev/OutlineVpnBot /srv/OutlineVpnBot
+  python3 -m venv /srv/OutlineVpnBot/venv
+  /srv/OutlineVpnBot/venv/bin/pip install -r /srv/OutlineVpnBot/venv/reqs.txt
 fi
 echo '' > /srv/OutlineVpnBot/conf/.env
 echo 'vTelegramBotKey='\"$vTelegramBotKey\" >> /srv/OutlineVpnBot/conf/.env
 echo 'vOutlineApiUrl='\"$vOutlineApiUrl\" >> /srv/OutlineVpnBot/conf/.env
 echo 'vOutlineCertSha256='\"$vOutlineCertSha256\" >> /srv/OutlineVpnBot/conf/.env
 chown -R main:main /srv/OutlineVpnBot
-chmod -R 660 /srv/OutlineVpnBot
 
 if [ ! -e "/lib/systemd/system/OutlineVpnBot.service" ]; then
   echo 'installing the outline vpn bot service'
