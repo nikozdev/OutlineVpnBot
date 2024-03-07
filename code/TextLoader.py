@@ -19,7 +19,7 @@ vSshClient: paramiko.SSHClient = paramiko.SSHClient()
 vSshClient.load_system_host_keys()
 vSshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-vHostName = 'nikozdev.net' #'46.226.162.47'
+vHostName = 'nikozdev.net' if True else '46.226.162.47'
 vHostPort = 22
 vUserName = 'root'
 vUserPass = None

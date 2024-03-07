@@ -174,15 +174,15 @@ vBot.set_my_commands(commands = [
     telebot.types.BotCommand('support', vBotTextTable['Support_Markup']),
 ], scope = telebot.types.BotCommandScopeDefault())
 
-vMarkupMain: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup(resize_keyboard = True)
-vMarkupMain.add(telebot.types.InlineKeyboardButton(
+vReplyMarkupMain: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup(resize_keyboard = True)
+vReplyMarkupMain.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Activate_Markup'],
     callback_data = 'activate',
 ), telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Trouble_Markup'],
     callback_data = 'trouble',
 ), row_width = 2)
-vMarkupMain.add(telebot.types.InlineKeyboardButton(
+vReplyMarkupMain.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Profile_Markup'],
     callback_data = 'profile',
 ), telebot.types.InlineKeyboardButton(
@@ -190,58 +190,59 @@ vMarkupMain.add(telebot.types.InlineKeyboardButton(
     callback_data = 'help',
 ), row_width = 2)
 
-vMarkupAdmin: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
-vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupAdmin: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
+vInlineMarkupAdmin.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Admin_Create_Markup'],
     callback_data = 'admin_create',
 ), telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Admin_Delete_Markup'],
     callback_data = 'admin_delete',
 ), row_width = 2)
-vMarkupAdmin.add()
-vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupAdmin.add()
+vInlineMarkupAdmin.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Admin_Payoff_Markup'],
     callback_data = 'admin_payoff',
 ))
-vMarkupAdmin.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupAdmin.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Return_Markup'],
     callback_data = 'return',
 ))
 
-vMarkupProfile: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
-vMarkupProfile.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupProfile: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
+vInlineMarkupProfile.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['MyKeys_Markup'],
     callback_data = 'mykeys',
 ))
-vMarkupProfile.add(telebot.types.InlineKeyboardButton(
-    text = vBotTextTable['Trouble_Markup'],
-    callback_data = 'trouble',
-))
-vMarkupProfile.add(telebot.types.InlineKeyboardButton(
-    text = vBotTextTable['Help_Markup'],
-    callback_data = 'help',
-))
-vMarkupProfile.add(telebot.types.InlineKeyboardButton(
+#vInlineMarkupProfile.add(telebot.types.InlineKeyboardButton(
+#    text = vBotTextTable['Trouble_Markup'],
+#    callback_data = 'trouble',
+#))
+#vInlineMarkupProfile.add(telebot.types.InlineKeyboardButton(
+#    text = vBotTextTable['Help_Markup'],
+#    callback_data = 'help',
+#))
+vReplyMarkupProfile: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup()
+vReplyMarkupProfile.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Return_Markup'],
     callback_data = 'return',
 ))
 
-vMarkupHelp: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
-vMarkupHelp.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupHelp: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
+vInlineMarkupHelp.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Support_Markup'],
     callback_data = 'support',
 ))
-vMarkupHelp.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupHelp.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Info_Markup'],
     callback_data = 'info',
 ))
-vMarkupHelp.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupHelp.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Return_Markup'],
     callback_data = 'return',
 ))
 
-vMarkupCancel: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
-vMarkupCancel.add(telebot.types.InlineKeyboardButton(
+vInlineMarkupCancel: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
+vInlineMarkupCancel.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Cancel_Markup'],
     callback_data = 'cancel',
 ))
@@ -293,14 +294,14 @@ def fMakeMyKeysResponse(vUserObject: telebot.types.User):
         vKeyDesc = vKeyDesc.replace('{TimeDelta.days}', str(vTimeDelta.days))
         vResponse += vKeyDesc
     return vResponse
-### fMakeProfileResponse
+### fMakeMyKeysResponse
 
 def fHandle_Msg_Start_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForStart, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
     vBot.set_chat_menu_button(vMessage.chat.id, telebot.types.MenuButtonCommands('commands'))
-    vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vMarkupMain)
+    vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vReplyMarkupMain)
 ### fHandle_Msg_Start_Main
 @vBot.message_handler(commands = ['start'])
 def fHandle_Msg_Start_Proxy(vMessage: telebot.types.Message):
@@ -309,9 +310,10 @@ def fHandle_Msg_Start_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Profile_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForProfile, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Profile'], reply_markup = vMarkupProfile)
+    vBot.reply_to(vMessage, vBotTextTable['Profile'], reply_markup = vInlineMarkupProfile)
+    vBot.reply_to(vMessage, vBotTextTable['Return_Prompt'], reply_markup = vReplyMarkupProfile)
 ### fHandle_Msg_Profile_Main
 @vBot.message_handler(commands = ['profile'])
 def fHandle_Msg_Profile_Proxy(vMessage: telebot.types.Message):
@@ -320,9 +322,9 @@ def fHandle_Msg_Profile_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_MyKeys_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForMyKeys, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, fMakeMyKeysResponse(vUserObject), reply_markup = vMarkupProfile)
+    vBot.reply_to(vMessage, fMakeMyKeysResponse(vUserObject), reply_markup = vInlineMarkupProfile)
 ### fHandle_Msg_MyKeys_Main
 @vBot.message_handler(commands = ['mykeys'])
 def fHandle_Msg_MyKeys_Proxy(vMessage: telebot.types.Message):
@@ -343,13 +345,13 @@ def fHandle_Msg_Trouble_Input(vMessage: telebot.types.Message):
     except:
         logging.error('failed to activate pkey:' + str(vError))
         vResponse: str = vBotTextTable['Activate_Failure']
-        vBot.reply_to(vMessage, vBotTextTable['Trouble_Failure'], reply_markup = vMarkupProfile)
+        vBot.reply_to(vMessage, vBotTextTable['Trouble_Failure'], reply_markup = vInlineMarkupProfile)
 ### fHandle_Msg_Trouble_Input
 def fHandle_Msg_Trouble_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForTrouble, vUserObject.id, 60):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '60'), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '60'), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Trouble_Input'], reply_markup = vMarkupCancel)
+    vBot.reply_to(vMessage, vBotTextTable['Trouble_Input'], reply_markup = vInlineMarkupCancel)
     vBot.register_next_step_handler(vMessage, fHandle_Msg_Trouble_Input)
 ### fHandle_Msg_Trouble_Main
 @vBot.message_handler(commands = ['trouble'])
@@ -369,17 +371,17 @@ def fHandle_Msg_Activate_Input(vMessage: telebot.types.Message):
         vResponse = vResponse.replace('{PKey}', vPkeyIndex)
         vResponse = vResponse.replace('{AUrl}', vOkeyEntry.vAUrl)
 
-        vBot.reply_to(vMessage, vResponse, reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vResponse, reply_markup = vReplyMarkupMain)
     except Exception as vError:
         logging.error('failed to activate pkey:' + str(vError))
         vResponse: str = vBotTextTable['Activate_Failure']
-        vBot.reply_to(vMessage, vResponse, reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vResponse, reply_markup = vReplyMarkupMain)
 ### fHandle_Msg_Activate_Input
 def fHandle_Msg_Activate_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForActivate, vUserObject.id, 10):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '10'), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '10'), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Activate_Input'], reply_markup = vMarkupCancel)
+    vBot.reply_to(vMessage, vBotTextTable['Activate_Input'], reply_markup = vInlineMarkupCancel)
     vBot.register_next_step_handler(vMessage, fHandle_Msg_Activate_Input)
 ### fHandle_Msg_Activate_Main
 @vBot.message_handler(commands = ['activate'])
@@ -389,9 +391,9 @@ def fHandle_Msg_Activate_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Help_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForHelp, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Help'], reply_markup = vMarkupHelp)
+    vBot.reply_to(vMessage, vBotTextTable['Help'], reply_markup = vInlineMarkupHelp)
 ### fHandle_Msg_Help_Main
 @vBot.message_handler(commands = ['help'])
 def fHandle_Msg_Help_Proxy(vMessage: telebot.types.Message):
@@ -400,9 +402,9 @@ def fHandle_Msg_Help_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Support_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForSupport, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Support'], reply_markup = vMarkupHelp)
+    vBot.reply_to(vMessage, vBotTextTable['Support'], reply_markup = vInlineMarkupHelp)
 ### fHandle_Msg_Support_Main
 @vBot.message_handler(commands = ['support'])
 def fHandle_Msg_Support_Proxy(vMessage: telebot.types.Message):
@@ -411,9 +413,9 @@ def fHandle_Msg_Support_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Info_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForInfo, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Info'], reply_markup = vMarkupHelp)
+    vBot.reply_to(vMessage, vBotTextTable['Info'], reply_markup = vInlineMarkupHelp)
 ### fHandle_Msg_Info_Main
 @vBot.message_handler(commands = ['info'])
 def fHandle_Msg_Info_Proxy(vMessage: telebot.types.Message):
@@ -442,17 +444,17 @@ def fHandle_Msg_Admin_Create_Input(vMessage: telebot.types.Message):
             vResponseIter = vResponseIter.replace('{Iter}', str(vIter + 1))
             vResponseIter = vResponseIter.replace('{PKey}', vPkeyIndex)
             vResponse += vResponseIter
-        vBot.reply_to(vMessage, vResponse, reply_markup = vMarkupAdmin)
+        vBot.reply_to(vMessage, vResponse, reply_markup = vInlineMarkupAdmin)
     except Exception as vError:
         logging.error('failed key creation: ' + str(vError))
-        vBot.reply_to(vMessage, vBotTextTable['Admin_Create_Failure'], reply_markup = vMarkupAdmin)
+        vBot.reply_to(vMessage, vBotTextTable['Admin_Create_Failure'], reply_markup = vInlineMarkupAdmin)
 ### fHandle_Msg_Admin_Create_Input
 def fHandle_Msg_Admin_Create_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if not fVetAdmin(vUserObject):
         vBot.reply_to(vMessage, vBotTextTable['Admin_Failure'])
-        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vMarkupMain)
+        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Admin_Create_Input'], reply_markup = vMarkupCancel)
+    vBot.reply_to(vMessage, vBotTextTable['Admin_Create_Input'], reply_markup = vInlineMarkupCancel)
     vBot.register_next_step_handler(vMessage, fHandle_Msg_Admin_Create_Input)
 ### fHandle_Msg_Admin_Create_Main
 @vBot.message_handler(commands=['admin_create'])
@@ -464,17 +466,17 @@ def fHandle_Msg_Admin_Delete_Input(vMessage: telebot.types.Message):
     try:
         vPkeyIndex: str = vMessage.text or ''
         fDeletePkey(vPkeyIndex)
-        vBot.reply_to(vMessage, vBotTextTable['Admin_Delete_Success'].replace('{PKey}', vPkeyIndex), reply_markup = vMarkupAdmin)
+        vBot.reply_to(vMessage, vBotTextTable['Admin_Delete_Success'].replace('{PKey}', vPkeyIndex), reply_markup = vInlineMarkupAdmin)
     except Exception as vError:
         logging.error('failed key deletion: ' + str(vError))
-        vBot.reply_to(vMessage, vBotTextTable['Admin_Delete_Failure'], reply_markup = vMarkupAdmin)
+        vBot.reply_to(vMessage, vBotTextTable['Admin_Delete_Failure'], reply_markup = vInlineMarkupAdmin)
 ### fHandle_Msg_Admin_Delete_Input
 def fHandle_Msg_Admin_Delete_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if not fVetAdmin(vUserObject):
         vBot.reply_to(vMessage, vBotTextTable['Admin_Failure'])
-        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vMarkupMain)
+        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Admin_Delete_Input'], reply_markup = vMarkupCancel)
+    vBot.reply_to(vMessage, vBotTextTable['Admin_Delete_Input'], reply_markup = vInlineMarkupCancel)
     vBot.register_next_step_handler(vMessage, fHandle_Msg_Admin_Delete_Input)
 ### fHandle_Msg_Admin_Delete_Main
 @vBot.message_handler(commands=['admin_delete'])
@@ -486,17 +488,17 @@ def fHandle_Msg_Admin_Payoff_Input(vMessage: telebot.types.Message):
     try:
         vPkeyIndex: str = vMessage.text or ''
         vPkeyIndex = fPayoffPkey(vPkeyIndex)
-        vBot.reply_to(vMessage, vBotTextTable['Admin_Payoff_Success'].replace('{PKey}', vPkeyIndex), reply_markup = vMarkupAdmin)
+        vBot.reply_to(vMessage, vBotTextTable['Admin_Payoff_Success'].replace('{PKey}', vPkeyIndex), reply_markup = vInlineMarkupAdmin)
     except Exception as vError:
         logging.error('failed payoff: ' + str(vError))
-        vBot.reply_to(vMessage, vBotTextTable['Admin_Payoff_Failure'], reply_markup = vMarkupAdmin)
+        vBot.reply_to(vMessage, vBotTextTable['Admin_Payoff_Failure'], reply_markup = vInlineMarkupAdmin)
 ### fHandle_Msg_Admin_Payoff_Input
 def fHandle_Msg_Admin_Payoff_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if not fVetAdmin(vUserObject):
         vBot.reply_to(vMessage, vBotTextTable['Admin_Failure'])
-        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vMarkupMain)
+        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Admin_Payoff_Input'], reply_markup = vMarkupCancel)
+    vBot.reply_to(vMessage, vBotTextTable['Admin_Payoff_Input'], reply_markup = vInlineMarkupCancel)
     vBot.register_next_step_handler(vMessage, fHandle_Msg_Admin_Payoff_Input)
 ### fHandle_Msg_Admin_Payoff_Main
 @vBot.message_handler(commands=['admin_payoff'])
@@ -507,16 +509,16 @@ def fHandle_Msg_Admin_Payoff_Proxy(vMessage: telebot.types.Message):
 def fHandle_Msg_Admin_Help_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if not fVetAdmin(vUserObject):
         vBot.reply_to(vMessage, vBotTextTable['Admin_Failure'])
-        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vMarkupMain)
+        vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Admin_Help'], reply_markup = vMarkupAdmin)
+    vBot.reply_to(vMessage, vBotTextTable['Admin_Help'], reply_markup = vInlineMarkupAdmin)
 @vBot.message_handler(commands = ['admin', 'admin_help'])
 def fHandle_Msg_Admin_Help_Proxy(vMessage: telebot.types.Message):
     fHandle_Msg_Admin_Help_Main(vMessage, vMessage.from_user)
 ### fHandle_Msg_Admin_Help_Proxy
 
 def fHandle_Msg_Cancel_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
-    vBot.reply_to(vMessage, vBotTextTable['Cancel'], reply_markup = vMarkupMain)
+    vBot.reply_to(vMessage, vBotTextTable['Cancel'], reply_markup = vReplyMarkupMain)
     vBot.clear_step_handler_by_chat_id(vMessage.chat.id)
 @vBot.message_handler(commands = ['cancel'])
 def fHandle_Msg_Cancel_Proxy(vMessage: telebot.types.Message):
@@ -564,6 +566,8 @@ vMsgToCmdTable: dict = {
     vBotTextTable['Trouble_Markup']: fHandle_Msg_Trouble_Proxy,
     vBotTextTable['Profile_Markup']: fHandle_Msg_Profile_Proxy,
     vBotTextTable['Help_Markup']: fHandle_Msg_Help_Proxy,
+    vBotTextTable['Cancel_Markup']: fHandle_Msg_Cancel_Proxy,
+    vBotTextTable['Return_Markup']: fHandle_Msg_Return_Proxy,
 }
 @vBot.message_handler(func = lambda message: True, content_types = [ 'text' ])
 def fHandle_Msg_Text(vMessage: telebot.types.Message):
