@@ -213,19 +213,6 @@ vInlineMarkupProfile.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['MyKeys_Markup'],
     callback_data = 'mykeys',
 ))
-#vInlineMarkupProfile.add(telebot.types.InlineKeyboardButton(
-#    text = vBotTextTable['Trouble_Markup'],
-#    callback_data = 'trouble',
-#))
-#vInlineMarkupProfile.add(telebot.types.InlineKeyboardButton(
-#    text = vBotTextTable['Help_Markup'],
-#    callback_data = 'help',
-#))
-vReplyMarkupProfile: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup()
-vReplyMarkupProfile.add(telebot.types.InlineKeyboardButton(
-    text = vBotTextTable['Return_Markup'],
-    callback_data = 'return',
-))
 
 vInlineMarkupHelp: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
 vInlineMarkupHelp.add(telebot.types.InlineKeyboardButton(
@@ -236,15 +223,16 @@ vInlineMarkupHelp.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Info_Markup'],
     callback_data = 'info',
 ))
-vInlineMarkupHelp.add(telebot.types.InlineKeyboardButton(
-    text = vBotTextTable['Return_Markup'],
-    callback_data = 'return',
-))
 
 vInlineMarkupCancel: telebot.types.InlineKeyboardMarkup = telebot.types.InlineKeyboardMarkup()
 vInlineMarkupCancel.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Cancel_Markup'],
     callback_data = 'cancel',
+))
+vReplyMarkupReturn: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup()
+vReplyMarkupReturn.add(telebot.types.InlineKeyboardButton(
+    text = vBotTextTable['Return_Markup'],
+    callback_data = 'return',
 ))
 
 vSpamDelay: int = 5
@@ -312,8 +300,14 @@ def fHandle_Msg_Profile_Main(vMessage: telebot.types.Message, vUserObject: teleb
     if fVetSpam(vSpamTableForProfile, vUserObject.id):
         vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Profile'], reply_markup = vInlineMarkupProfile)
-    vBot.reply_to(vMessage, vBotTextTable['Return_Prompt'], reply_markup = vReplyMarkupProfile)
+    vPKeyArray = vDbUserToListTable.get(str(vUserObject.id), [])
+    vPKeyCount: int = len(vPKeyArray)
+    vResponse: str = vBotTextTable['Profile']
+    vResponse = vResponse.replace('{vUserName}', vUserObject.username)
+    vResponse = vResponse.replace('{vUserId}', str(vUserObject.id))
+    vResponse = vResponse.replace('{vPKeyCount}', str(vPKeyCount))
+    vBot.reply_to(vMessage, vResponse, reply_markup = vInlineMarkupProfile)
+    vBot.reply_to(vMessage, vBotTextTable['Return_Prompt'], reply_markup = vReplyMarkupReturn)
 ### fHandle_Msg_Profile_Main
 @vBot.message_handler(commands = ['profile'])
 def fHandle_Msg_Profile_Proxy(vMessage: telebot.types.Message):
@@ -394,6 +388,7 @@ def fHandle_Msg_Help_Main(vMessage: telebot.types.Message, vUserObject: telebot.
         vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
     vBot.reply_to(vMessage, vBotTextTable['Help'], reply_markup = vInlineMarkupHelp)
+    vBot.reply_to(vMessage, vBotTextTable['Return_Prompt'], reply_markup = vReplyMarkupReturn)
 ### fHandle_Msg_Help_Main
 @vBot.message_handler(commands = ['help'])
 def fHandle_Msg_Help_Proxy(vMessage: telebot.types.Message):
@@ -402,9 +397,9 @@ def fHandle_Msg_Help_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Support_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForSupport, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupReturn)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Support'], reply_markup = vInlineMarkupHelp)
+    vBot.reply_to(vMessage, vBotTextTable['Support'])
 ### fHandle_Msg_Support_Main
 @vBot.message_handler(commands = ['support'])
 def fHandle_Msg_Support_Proxy(vMessage: telebot.types.Message):
@@ -415,7 +410,7 @@ def fHandle_Msg_Info_Main(vMessage: telebot.types.Message, vUserObject: telebot.
     if fVetSpam(vSpamTableForInfo, vUserObject.id):
         vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
         return
-    vBot.reply_to(vMessage, vBotTextTable['Info'], reply_markup = vInlineMarkupHelp)
+    vBot.reply_to(vMessage, vBotTextTable['Info'])
 ### fHandle_Msg_Info_Main
 @vBot.message_handler(commands = ['info'])
 def fHandle_Msg_Info_Proxy(vMessage: telebot.types.Message):
