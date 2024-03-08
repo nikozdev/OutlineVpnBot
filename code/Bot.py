@@ -2,10 +2,12 @@
 
 import time
 import datetime
-vTimeFormat: str = '%Y-%m-%d %H:%M:%S'
+vTimeFormat: str = '%d-%m-%Y %H:%M:%S'
 
 import os
 import threading
+
+import regex
 
 import uuid
 
@@ -229,11 +231,11 @@ vInlineMarkupCancel.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Cancel_Markup'],
     callback_data = 'cancel',
 ))
+vReplyMarkupCancel: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup()
+vReplyMarkupCancel.add(telebot.types.KeyboardButton(vBotTextTable['Cancel_Markup']))
+
 vReplyMarkupReturn: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup()
-vReplyMarkupReturn.add(telebot.types.InlineKeyboardButton(
-    text = vBotTextTable['Return_Markup'],
-    callback_data = 'return',
-))
+vReplyMarkupReturn.add(telebot.types.InlineKeyboardButton(vBotTextTable['Return_Markup']))
 
 vSpamDelay: int = 5
 vSpamTableForStart: dict[int, int] = { }
@@ -259,34 +261,9 @@ def fVetAdmin(vUser: telebot.types.User) -> bool:
         return vDbAdminTableJson.get(str(vUser.id), 0) > 0
 ### fVetAdmin
 
-def fMakeMyKeysResponse(vUserObject: telebot.types.User):
-    vUserIdStr: str = str(vUserObject.id)
-    vList: list = vDbUserToListTable.get(vUserIdStr, [])
-    vResponse = vBotTextTable['MyKeys']
-    for vPkeyOrder, vPkeyIndex in enumerate(vList):
-        vKeyDesc: str = vBotTextTable['MyKeys_Iter']
-        vKeyDesc = vKeyDesc.replace('{Order}', str(vPkeyOrder + 1))
-        vKeyDesc = vKeyDesc.replace('{PKey}', vPkeyIndex)
-        vOkeyIndex = vDbPkeyToOkeyTable[vPkeyIndex]
-        vOkeyEntry = vOutlineConnection.fGetKeyEntry(vOkeyIndex)
-        vKeyDesc = vKeyDesc.replace('{AUrl}', vOkeyEntry.vAUrl)
-        # time
-        vData: dict = vDbPkeyToDataTable[vPkeyIndex]
-        vTimeLimit = vData['TimeLimit']
-        vKeyDesc = vKeyDesc.replace('{TimeLimit.days}', str(datetime.timedelta(seconds = vTimeLimit).days))
-        vTimeStart: int = vData['TimeStart'] 
-        vKeyDesc = vKeyDesc.replace('{TimeStart}', datetime.datetime.utcfromtimestamp(vTimeStart).strftime(vTimeFormat))
-        vTimeUntil: int = vTimeStart + vTimeLimit
-        vKeyDesc = vKeyDesc.replace('{TimeUntil}', datetime.datetime.utcfromtimestamp(vTimeUntil).strftime(vTimeFormat))
-        vTimeDelta: datetime.timedelta = datetime.timedelta(seconds = vTimeUntil - vTimeStart)
-        vKeyDesc = vKeyDesc.replace('{TimeDelta.days}', str(vTimeDelta.days))
-        vResponse += vKeyDesc
-    return vResponse
-### fMakeMyKeysResponse
-
 def fHandle_Msg_Start_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForStart, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)))
         return
     vBot.set_chat_menu_button(vMessage.chat.id, telebot.types.MenuButtonCommands('commands'))
     vBot.send_message(vMessage.chat.id, vBotTextTable['Start'], reply_markup = vReplyMarkupMain)
@@ -298,7 +275,7 @@ def fHandle_Msg_Start_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Profile_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForProfile, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)))
         return
     vPKeyArray = vDbUserToListTable.get(str(vUserObject.id), [])
     vPKeyCount: int = len(vPKeyArray)
@@ -314,11 +291,96 @@ def fHandle_Msg_Profile_Proxy(vMessage: telebot.types.Message):
     fHandle_Msg_Profile_Main(vMessage, vMessage.from_user)
 ### fHandle_Msg_Profile_Proxy
 
+vMyKeysPageIndex: int = 0
+vMyKeysRegex: regex.Pattern = regex.compile(r'\d+:')
+def fHandle_Msg_MyKeys_Input(vMessage: telebot.types.Message):
+    global vMyKeysPageIndex
+    vInput: str = vMessage.text or ''
+    vFound = vMyKeysRegex.findall(vInput, endpos = 9)
+    vPkeyArray: list[str] = vDbUserToListTable.get(str(vMessage.from_user.id), [])
+    if vFound:
+        vPkeyOrder: int = int(vFound[0][0:-1])
+        vPkeyIndex: int = vPkeyOrder - 1
+        if len(vPkeyArray) < vPkeyIndex:
+            vBot.reply_to(vMessage, vBotTextTable['MyKeys_Input_Failure'])
+            vBot.register_next_step_handler(vMessage, fHandle_Msg_MyKeys_Input)
+            return
+        vPkeyEntry: str = vPkeyArray[vPkeyIndex]
+        # .
+        vResponse = vBotTextTable['MyKeys_Input_Success']
+        vResponse = vResponse.replace('{Order}', str(vPkeyOrder))
+        vResponse = vResponse.replace('{PKey}', vPkeyEntry)
+        # okey
+        vOkeyIndex = vDbPkeyToOkeyTable[vPkeyEntry]
+        vOkeyEntry = vOutlineConnection.fGetKeyEntry(vOkeyIndex)
+        vResponse = vResponse.replace('{AUrl}', vOkeyEntry.vAUrl)
+        # time
+        vData: dict = vDbPkeyToDataTable[vPkeyEntry]
+        vTimeLimit: int = vData['TimeLimit']
+        vTimeStart: int = vData['TimeStart'] 
+        vTimeUntil: int = vTimeStart + vTimeLimit
+        vResponse = vResponse.replace('{DateUntil}', datetime.datetime.utcfromtimestamp(vTimeUntil).strftime(vTimeFormat))
+        # final
+        vBot.reply_to(vMessage, vResponse)
+        vBot.register_next_step_handler(vMessage, fHandle_Msg_MyKeys_Input)
+    elif vInput == vBotTextTable['MyKeys_Page_Prev_Markup']:
+        vMyKeysPageIndex = vMyKeysPageIndex - 1
+        fHandle_Msg_MyKeys_Page(vMessage, vMessage.from_user, vPkeyArray)
+    elif vInput == vBotTextTable['MyKeys_Page_Next_Markup']:
+        vMyKeysPageIndex = vMyKeysPageIndex + 1
+        fHandle_Msg_MyKeys_Page(vMessage, vMessage.from_user, vPkeyArray)
+    elif vInput == vBotTextTable['Return_Markup']:
+        fHandle_Msg_Return_Main(vMessage, vMessage.from_user)
+    else:
+        vBot.reply_to(vMessage, vBotTextTable['MyKeys_Input_Failure'])
+        vBot.register_next_step_handler(vMessage, fHandle_Msg_MyKeys_Input)
+### fHandle_Msg_MyKeys_Input
+def fHandle_Msg_MyKeys_Page(vMessage: telebot.types.Message, vUserObject: telebot.types.User, vPkeyArray: list):
+    global vMyKeysPageIndex
+    vPkeyCount: int = len(vPkeyArray)
+    vPkeyOffset: int = 1 + vMyKeysPageIndex * 3
+    vPkeyOffsetPrev: int = vPkeyOffset - 3
+    vPkeyOffsetNext: int = vPkeyOffset + 3
+    vReplyMarkupMyKeys: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup(resize_keyboard = True)
+    for vPkeyOrder in range(vPkeyOffset, min(vPkeyOffsetNext, vPkeyCount + 1)):
+        vPkeyIndex = vPkeyOrder - 1
+        vPkeyEntry = vPkeyArray[vPkeyIndex]
+        vReplyMarkupMyKeys.add(telebot.types.KeyboardButton(f'{vPkeyOrder}: {vPkeyEntry}'))
+    if (vPkeyOffsetPrev > 0) and (vPkeyOffsetNext < vPkeyCount):
+        vReplyMarkupMyKeys.add(
+            telebot.types.KeyboardButton(text = vBotTextTable['MyKeys_Page_Prev_Markup']),
+            telebot.types.KeyboardButton(text = vBotTextTable['MyKeys_Page_Next_Markup']),
+            row_width = 2
+        )
+    elif (vPkeyOffsetPrev > 0):
+        vReplyMarkupMyKeys.add(
+            telebot.types.KeyboardButton(text = vBotTextTable['MyKeys_Page_Prev_Markup']),
+        )
+    elif (vPkeyOffsetNext < vPkeyCount):
+        vReplyMarkupMyKeys.add(
+            telebot.types.KeyboardButton(vBotTextTable['MyKeys_Page_Next_Markup']),
+        )
+    vReplyMarkupMyKeys.add(
+        telebot.types.KeyboardButton(vBotTextTable['Return_Markup']),
+    )
+    vBot.reply_to(
+        vMessage,
+        vBotTextTable['MyKeys_Page'].replace('{PageOrder}', str(vMyKeysPageIndex + 1)),
+        reply_markup = vReplyMarkupMyKeys
+    )
+    vBot.register_next_step_handler(vMessage, fHandle_Msg_MyKeys_Input)
+### fHandle_Msg_MyKeys_Page
 def fHandle_Msg_MyKeys_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForMyKeys, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)))
         return
-    vBot.reply_to(vMessage, fMakeMyKeysResponse(vUserObject), reply_markup = vInlineMarkupProfile)
+    global vMyKeysPageIndex
+    vMyKeysPageIndex = 0
+    vPkeyArray: list[str] = vDbUserToListTable.get(str(vUserObject.id), [])
+    vPkeyCount: int = len(vPkeyArray)
+    vBot.reply_to(vMessage, vBotTextTable['MyKeys'].replace('{PKeyCount}', str(vPkeyCount)))
+    #vBot.reply_to(vMessage, vBotTextTable['Cancel_Prompt'], reply_markup = vReplyMarkupCancel)
+    fHandle_Msg_MyKeys_Page(vMessage, vUserObject, vPkeyArray)
 ### fHandle_Msg_MyKeys_Main
 @vBot.message_handler(commands = ['mykeys'])
 def fHandle_Msg_MyKeys_Proxy(vMessage: telebot.types.Message):
@@ -343,7 +405,7 @@ def fHandle_Msg_Trouble_Input(vMessage: telebot.types.Message):
 ### fHandle_Msg_Trouble_Input
 def fHandle_Msg_Trouble_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForTrouble, vUserObject.id, 60):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '60'), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '60'))
         return
     vBot.reply_to(vMessage, vBotTextTable['Trouble_Input'], reply_markup = vInlineMarkupCancel)
     vBot.register_next_step_handler(vMessage, fHandle_Msg_Trouble_Input)
@@ -373,7 +435,7 @@ def fHandle_Msg_Activate_Input(vMessage: telebot.types.Message):
 ### fHandle_Msg_Activate_Input
 def fHandle_Msg_Activate_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForActivate, vUserObject.id, 10):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '10'), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', '10'))
         return
     vBot.reply_to(vMessage, vBotTextTable['Activate_Input'], reply_markup = vInlineMarkupCancel)
     vBot.register_next_step_handler(vMessage, fHandle_Msg_Activate_Input)
@@ -385,7 +447,7 @@ def fHandle_Msg_Activate_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Help_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForHelp, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)))
         return
     vBot.reply_to(vMessage, vBotTextTable['Help'], reply_markup = vInlineMarkupHelp)
     vBot.reply_to(vMessage, vBotTextTable['Return_Prompt'], reply_markup = vReplyMarkupReturn)
@@ -408,7 +470,7 @@ def fHandle_Msg_Support_Proxy(vMessage: telebot.types.Message):
 
 def fHandle_Msg_Info_Main(vMessage: telebot.types.Message, vUserObject: telebot.types.User):
     if fVetSpam(vSpamTableForInfo, vUserObject.id):
-        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)), reply_markup = vReplyMarkupMain)
+        vBot.reply_to(vMessage, vBotTextTable['Spam_Warning'].replace('{Delay}', str(vSpamDelay)))
         return
     vBot.reply_to(vMessage, vBotTextTable['Info'])
 ### fHandle_Msg_Info_Main
