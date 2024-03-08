@@ -164,7 +164,7 @@ for vRow in vBotTextWs.iter_rows(min_row = 1, min_col=1):
 #vBotTextTable: dict[str, str] = json.load(open('conf/Text.json', 'r', encoding = 'utf-8'))
 
 vBotKey: str = os.environ['vTelegramBotKey']
-vBot: telebot.TeleBot = telebot.TeleBot(vBotKey, parse_mode = None)
+vBot: telebot.TeleBot = telebot.TeleBot(vBotKey, parse_mode = 'Markdown')
 vBot.set_my_commands(commands = [
     telebot.types.BotCommand('start', vBotTextTable['Start_Markup']),
     telebot.types.BotCommand('activate', vBotTextTable['Activate_Markup']),
