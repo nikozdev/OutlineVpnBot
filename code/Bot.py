@@ -619,18 +619,21 @@ def fHandle_Query(vQuery: telebot.types.CallbackQuery):
 только из-за этой тупой хуеты;
 '''
 vMsgToCmdTable: dict = {
-    vBotTextTable['Activate_Markup']: fHandle_Msg_Activate_Proxy,
-    vBotTextTable['Trouble_Markup']: fHandle_Msg_Trouble_Proxy,
-    vBotTextTable['Profile_Markup']: fHandle_Msg_Profile_Proxy,
-    vBotTextTable['Help_Markup']: fHandle_Msg_Help_Proxy,
-    vBotTextTable['Cancel_Markup']: fHandle_Msg_Cancel_Proxy,
-    vBotTextTable['Return_Markup']: fHandle_Msg_Return_Proxy,
+    vBotTextTable['Activate_Markup'].replace(' ', ''): fHandle_Msg_Activate_Proxy,
+    vBotTextTable['Trouble_Markup'].replace(' ', ''): fHandle_Msg_Trouble_Proxy,
+    vBotTextTable['Profile_Markup'].replace(' ', ''): fHandle_Msg_Profile_Proxy,
+    vBotTextTable['Help_Markup'].replace(' ', ''): fHandle_Msg_Help_Proxy,
+    vBotTextTable['Cancel_Markup'].replace(' ', ''): fHandle_Msg_Cancel_Proxy,
+    vBotTextTable['Return_Markup'].replace(' ', ''): fHandle_Msg_Return_Proxy,
 }
 @vBot.message_handler(func = lambda message: True, content_types = [ 'text' ])
 def fHandle_Msg_Text(vMessage: telebot.types.Message):
-    vCmd = vMsgToCmdTable.get(vMessage.text or '')
+    # эта пидрила мессенджерская еще и пробелы в конце обрезает...
+    vCmd = vMsgToCmdTable.get((vMessage.text or '').replace(' ', ''))
     if vCmd:
         vCmd(vMessage)
+    else:
+        vBot.reply_to(vMessage, 'I do not understand')
 ### fHandle_Msg_Text
 
 from ischedule import schedule, run_loop
