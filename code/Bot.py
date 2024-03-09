@@ -231,10 +231,10 @@ vInlineMarkupCancel.add(telebot.types.InlineKeyboardButton(
     text = vBotTextTable['Cancel_Markup'],
     callback_data = 'cancel',
 ))
-vReplyMarkupCancel: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup()
+vReplyMarkupCancel: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup(resize_keyboard = True)
 vReplyMarkupCancel.add(telebot.types.KeyboardButton(vBotTextTable['Cancel_Markup']))
 
-vReplyMarkupReturn: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup()
+vReplyMarkupReturn: telebot.types.ReplyKeyboardMarkup = telebot.types.ReplyKeyboardMarkup(resize_keyboard = True)
 vReplyMarkupReturn.add(telebot.types.InlineKeyboardButton(vBotTextTable['Return_Markup']))
 
 vSpamDelay: int = 5
