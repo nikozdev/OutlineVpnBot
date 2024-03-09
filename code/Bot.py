@@ -311,9 +311,13 @@ def fHandle_Msg_MyKeys_Input(vMessage: telebot.types.Message):
         vResponse = vResponse.replace('{Order}', str(vPkeyOrder))
         vResponse = vResponse.replace('{PKey}', vPkeyEntry)
         # okey
-        vOkeyIndex = vDbPkeyToOkeyTable[vPkeyEntry]
-        vOkeyEntry = vOutlineConnection.fGetKeyEntry(vOkeyIndex)
-        vResponse = vResponse.replace('{AUrl}', vOkeyEntry.vAUrl)
+        try:
+            vOkeyIndex = vDbPkeyToOkeyTable[vPkeyEntry]
+            vOkeyEntry = vOutlineConnection.fGetKeyEntry(vOkeyIndex)
+            vResponse = vResponse.replace('{AUrl}', vOkeyEntry.vAUrl)
+        except Exception as vError:
+            logging.error('the pkey "{vPkeyEntry}" does not have okey anymore!\n' + str(vError))
+            vResponse = vResponse.replace('{AUrl}', vBotTextTable['MyKeys_BrokenKey'])
         # time
         vData: dict = vDbPkeyToDataTable[vPkeyEntry]
         vTimeLimit: int = vData['TimeLimit']
